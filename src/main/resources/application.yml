@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: @project.artifactId@
+    version: @project.version@
+    jsonplaceHolder:
+      host: https://jsonplaceholder.typicode.com/
+  r2dbc:
+    url: r2dbc:h2:file:///./.db
+  flyway:
+    url: jdbc:h2:file:./.db
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        all: true
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        step: 10s
+

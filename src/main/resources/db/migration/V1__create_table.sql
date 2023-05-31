@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS EMPLOYMENT_DETAILS (
+    id LONG NOT NULL,
+    designation VARCHAR(255) NOT NULL,
+    salary LONG,
+    PRIMARY KEY (id)
+);
