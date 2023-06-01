@@ -3,6 +3,7 @@ package com.samitkumarpatel.tracingdemo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +72,11 @@ interface EmploymentDetailsRepository extends R2dbcRepository <EmploymentDetails
 class UserServices {
 	private final UserClient userClient;
 	private final EmploymentDetailsRepository employmentDetailsRepository;
+	private final KafkaTemplate<String, String> kafkaTemplate;
+
+
+	@Value("${spring.kafka.topic}")
+	private String kafkaTopic;
 
 	public Flux<User> allUsers() {
 		return Flux.zip(
@@ -86,8 +96,12 @@ class UserServices {
 						user.company(),
 						employmentDetails
 				)
-		);
+		).doOnNext(user -> {
+			kafkaTemplate.send(kafkaTopic, user.name(), "readALLUser");
+			log.info("kafka message sent");
+		});
 	}
+
 
 	public Mono<User> userById(int id) {
 		return Mono.zip(
@@ -103,7 +117,10 @@ class UserServices {
 						user.company(),
 						employmentDetails
 				)
-		);
+		).doOnNext(user -> {
+			kafkaTemplate.send(kafkaTopic, user.name(), String.format("readUserById %s", id));
+			log.info("kafka message sent");
+		});
 	}
 
 }
@@ -126,5 +143,25 @@ class Configurations {
 		var webClientAdapter = WebClientAdapter.forClient(builder.baseUrl(baseUrl).build());
 		var httpServiceProxyFactory = HttpServiceProxyFactory.builder(webClientAdapter).build();
 		return httpServiceProxyFactory.createClient(UserClient.class);
+	}
+
+	@Bean
+	NewTopic newTopic(@Value("${spring.kafka.topic}") String topicName) {
+		//return new NewTopic(topicName, 1, (short) 1);
+		return TopicBuilder.name(topicName)
+				.partitions(10)
+				.replicas(1)
+				.compact()
+				.build();
+	}
+}
+
+@Component
+@Slf4j
+class KafkaConsumer {
+
+	@KafkaListener(topics = "test")
+	public void processMessage(String content) {
+		log.info("kafka consumer = '{}'", content);
 	}
 }
