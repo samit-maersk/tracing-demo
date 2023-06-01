@@ -9,4 +9,4 @@ scrape_configs:
     scrape_interval: 2s
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'localhost:8080', 'host.docker.internal:8080', '192.168.0.187:8080' ]
+      - targets: [ 'localhost:8080', 'host.docker.internal:8080', '192.168.2.27:8080' ]

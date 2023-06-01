@@ -13,9 +13,9 @@ docker compose up
 
 - create a native executable
 ```shell
-./mvnw native:compile -Pnative
+./mvnw -Pnative native:compile 
 ```
 - To run the native executable
 ```shell
-  ./target/tracing-demo-1.0.0-SNAPSHOT-runner
+  ./target/tracing-demo
 ```

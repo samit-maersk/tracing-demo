@@ -47,7 +47,12 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 		</dependency>
-
+		<!-- r2dbc-micrometer -->
+		<dependency>
+			<groupId>org.springframework.experimental</groupId>
+			<artifactId>r2dbc-micrometer-spring-boot</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 		<!-- spanId & traceId -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
